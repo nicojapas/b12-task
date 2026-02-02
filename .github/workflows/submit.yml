@@ -1,0 +1,36 @@
+name: B12 Submission
+
+on:
+  workflow_dispatch:
+    inputs:
+      submission_type:
+        description: "Which payload to send?"
+        required: true
+        default: "real"
+        type: choice
+        options:
+          - real
+          - example
+
+jobs:
+  submit:
+    name: Submit Application
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Submit to B12
+        env:
+          GITHUB_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SUBMISSION_TYPE: ${{ github.event.inputs.submission_type }}
+          B12_SIGNING_SECRET: ${{ secrets.B12_SIGNING_SECRET }}
+        run: python submit.py
